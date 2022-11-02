@@ -30,8 +30,9 @@ class Main:
         self.wifi = WiFi(self)
 
         if reset_cause() == PWRON_RESET:
-            self.vindriktning.buzzer.on()
-            sleep(0.05)
+            for i in (262, 294, 330, 349, 392, 440, 494, 523):
+                self.vindriktning.buzzer.on(i)
+                sleep(0.05)
             self.vindriktning.buzzer.off()
 
             led = self.vindriktning.led

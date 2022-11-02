@@ -1,17 +1,20 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
 
-from uasyncio import sleep_ms, Event
-from collections import deque
+from uasyncio import sleep_ms as asleep_ms, Event
+from time import sleep_ms
+from collections import deque, namedtuple
 
 
 class Beeper:
+    beepit = namedtuple('Beep', ('freq', 'duration', 'gap', 'cnt'))
+
     def __init__(self, app):
         self.app = app
-        self.beeps = deque(tuple(), 16)
+        self.beeps = deque(tuple(), 128)
         self.event = Event()
 
-    def beep(self, duration, gap, cnt=1):
-        self.beeps.append((duration, gap, cnt))
+    def __call__(self, freq, duration, gap=0, cnt=1):
+        self.beeps.append(self.beepit(freq, duration, gap, cnt))
         self.event.set()
 
     async def beep_task(self):
@@ -26,10 +29,10 @@ class Beeper:
             with pm.disabled:
                 while beeps:
                     beep = beeps.popleft()
-                    for _ in range(beep[2]):
-                        buzzer.on()
-                        await sleep_ms(beep[0])
+                    for _ in range(beep.cnt):
+                        buzzer.on(beep.freq)
+                        sleep_ms(beep.duration)
                         buzzer.off()
-                        await sleep_ms(beep[1])
+                        await asleep_ms(beep.gap)
 
             event.clear()

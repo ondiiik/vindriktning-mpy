@@ -45,5 +45,6 @@ class PowerManagement:
             log.dbg('CPU-FREQ', 240, 'MHz, light sleep', 'enabled')
 
             while not non_pm():
+                wdt.feed()
                 lightsleep(50)
                 await sleep_ms(0)

@@ -4,7 +4,7 @@ from .scd4x import SCD4X
 from com.color import Rgb
 from com.logging import Logger
 from dht import DHT22
-from machine import Pin, UART, I2C, ADC, deepsleep
+from machine import Pin, PWM, UART, I2C, ADC, deepsleep
 from micropython import const
 from neopixel import NeoPixel
 from uasyncio import sleep_ms
@@ -24,6 +24,19 @@ _LIGHTS_HIGH = const(3000)
 _LIGHTS_REST = const(4095 - _LIGHTS_HIGH)
 
 
+class Buzzer:
+    def __init__(self):
+        self._pin = Pin(13, Pin.OUT)
+        self._pin.off()
+
+    def on(self, freq):
+        self._pwm = PWM(self._pin, freq=freq, duty=512)
+
+    def off(self):
+        self._pwm.deinit()
+        self._pin.off()
+
+
 class Vindriktning:
     class Led(NeoPixel):
         def __init__(self):
@@ -35,7 +48,7 @@ class Vindriktning:
     def __init__(self):
         self.led = self.Led()
         self.fan = Pin(12, Pin.OUT)
-        self.buzzer = Pin(13, Pin.OUT)
+        self.buzzer = Buzzer()
         self._sdc41 = SCD4X(I2C(0, scl=Pin(22), sda=Pin(21), freq=400000))
         self._dht = DHT22(Pin(5))
         self._uart = _uart
@@ -64,8 +77,8 @@ class Vindriktning:
         self.co2_ppm = self._sdc41.co2_ppm
 
         if self._dht is None:
-            self.temperature_dgc = self._sdc41.temperature + config.csd41_temp_shift
-            humidity_pc = self._sdc41.relative_humidity + config.scd41_humi_shift
+            self.temperature_dgc = round(self._sdc41.temperature + config.csd41_temp_shift, 2)
+            humidity_pc = round(self._sdc41.relative_humidity + config.scd41_humi_shift, 2)
         else:
             self._dht.measure()
             self.temperature_dgc = self._dht.temperature() + config.dht22_temp_shift
