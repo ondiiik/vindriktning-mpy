@@ -20,13 +20,12 @@ class Sensor2Led(Plugin):
 
                 if measure.co2_ppm > config.levels_high:
                     if measure.light_pc > 0:
-                        for _ in range(3):
-                            log.msg('!!! Too much CO2 - ALERT !!!', measure.co2_ppm, 'ppm', '(day)')
-                            for _ in range(4):
-                                beep(3136, 20, 20, 7)
-                                beep(3136, 20, 100)
-                                beep(2093, 20, 20, 7)
-                                beep(2093, 20, 800)
+                        log.msg('!!! Too much CO2 - ALERT !!!', measure.co2_ppm, 'ppm', '(day)')
+                        for _ in range(6):
+                            beep(3136, 20, 20, 7)
+                            beep(3136, 20, 100)
+                            beep(2093, 20, 20, 7)
+                            beep(2093, 20, 800)
                     elif not config.night_silent:
                         log.msg('!!! Too much CO2 - ALERT !!!', measure.co2_ppm, 'ppm', '(night)')
                         beep(20, 5, 195, 16)
@@ -42,4 +41,10 @@ class Sensor2Led(Plugin):
 
                 if measure.co2_ppm < config.levels_low:
                     log.msg('Relaxed ...')
+                    if measure.light_pc > 0:
+                        for i in (262, 294, 330, 349, 392, 440, 494, 523):
+                            beep(i, 100)
+                    elif not config.night_silent:
+                        for i in (262, 294, 330, 349, 392, 440, 494, 523):
+                            beep(i, 5, 95)
                     break

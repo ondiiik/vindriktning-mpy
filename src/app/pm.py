@@ -4,6 +4,7 @@ from com.logging import Logger
 from uasyncio import sleep_ms
 from machine import lightsleep, WDT, freq
 from config.sys import pm_enabled, wdt_time
+from time import sleep_ms as ssleep_ms
 
 log = Logger(__name__)
 
@@ -46,5 +47,6 @@ class PowerManagement:
 
             while not non_pm():
                 wdt.feed()
+                ssleep_ms(10)
                 lightsleep(50)
                 await sleep_ms(0)

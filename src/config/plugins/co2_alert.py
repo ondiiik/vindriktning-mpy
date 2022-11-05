@@ -5,7 +5,7 @@ enabled = True
 levels_high = 1200
 
 # Levels of CO2 in ppm when alert consider save CO2 level
-levels_low = 700
+levels_low = 600
 
 # Set this on True when you want to switch alert off in night
 night_silent = True

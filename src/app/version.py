@@ -12,4 +12,4 @@ class Version(tuple):
         return repr(self)
 
 
-version = Version(1, 1)
+version = Version(1, 2)
