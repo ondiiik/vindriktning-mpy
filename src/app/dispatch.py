@@ -1,9 +1,11 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
 
-from .plugins import Plugin
+from .plugins import Plugin, co2_alert, sensor_to_led, sensor_to_mqtt
+
 from com.logging import Logger
 from gc import collect
-from os import ilistdir
+from os import ilistdir, mkdir
 from uasyncio import create_task
 
 
@@ -11,38 +13,34 @@ log = Logger(__name__)
 
 
 class Dispatcher:
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         self.app = app
         self.plugins = dict()
 
-        for file in ilistdir('/plugins'):
-            name = file[0].split('.')[0]
+        # Create list of built-in plugins
+        plugins = [co2_alert, sensor_to_led, sensor_to_mqtt]
 
-            if name.startswith('_'):
-                continue
+        # Append also plugins from plugins folder
+        plugins += [
+            getattr(
+                __import__(f"plugins.{file[0].split('.')[0]}"), file[0].split(".")[0]
+            )
+            for file in ilistdir("/plugins")
+        ]
 
-            try:
-                config = getattr(getattr(__import__(f'config.plugins.{name}'), 'plugins'), name)
-            except AttributeError:
-                log.dbg('Skipped plugin', name, '(missing config)')
-                continue
-
-            try:
-                if not config.enabled:
-                    log.dbg('Skipped plugin', name, '(disabled)')
-                    continue
-            except AttributeError:
-                log.dbg('Skipped plugin', name, '(default)')
-                continue
-
-            module = getattr(__import__(f'plugins.{name}'), name)
-
+        # Iterate through all plugins
+        for module in plugins:
+            name = module.__name__.split(".")[-1]
             for attr_name in dir(module):
-                attr = getattr(module, attr_name)
+                plugin = getattr(module, attr_name)
                 try:
-                    if Plugin in attr.__bases__:
-                        log.msg('Using plugin', name, attr)
-                        self.plugins[name] = attr(app)
+                    if Plugin in plugin.__bases__:
+                        p = plugin(app)
+                        if p.cfg.enabled:
+                            self.plugins[name] = p
+                            log.msg("Using plugin", name)
+                        else:
+                            log.dbg("Skipped plugin", name)
                 except AttributeError:
                     pass
 
@@ -59,15 +57,32 @@ class Dispatcher:
                 await measure._new_data.wait()
                 measure._new_data.clear()
 
-                log.dbg('+-------------------------------------------------------')
-                log.dbg('| CO2         -', measure.co2_ppm, 'ppm')
-                log.dbg('| Dust        -', measure.dust_ugpm3, 'ug/m3')
-                log.dbg('| Temperature -', measure.temperature_dgc, '°C', measure.temperature_method)
-                log.dbg('| Humidity    -', measure.humidity_pc, '%')
-                log.dbg('| Light       -', measure.light_pc, '%', measure.light_method)
-                log.dbg('+-------------------------------------------------------')
+                log.dbg("+-------------------------------------------------------")
+                log.dbg("| CO2         -", measure.co2_ppm, "ppm")
+                log.dbg("| Dust        -", measure.dust_ugpm3, "ug/m3")
+                log.dbg(
+                    "| Temperature -",
+                    measure.temperature_dgc,
+                    "°C",
+                    measure.sensors,
+                )
+                log.dbg("| Humidity    -", measure.humidity_pc, "%")
+                log.dbg("| Light       -", measure.light_pc, "%", measure.light_method)
+                log.dbg("+-------------------------------------------------------")
 
                 for plugin in plugins:
                     plugin.event.set()
 
                 collect()
+
+
+try:
+    mkdir("plugins")
+except:
+    ...
+
+
+__all__ = (
+    "Dispatcher",
+    "log",
+)

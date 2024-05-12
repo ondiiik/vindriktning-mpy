@@ -1,13 +1,29 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
 
-from uasyncio import sleep_ms, Event
 from com.logging import Logger
-from network import WLAN, STA_IF
+from config import Cfg
+
 from gc import collect
 from machine import lightsleep
+from network import STA_IF, WLAN
+from uasyncio import Event, sleep_ms
 
 
 log = Logger(__name__)
+config = Cfg(
+    "wifi",
+    {
+        "ssid": {
+            "value": "Please fill in",
+            "description": "SSID (name) of WiFi network where to be connected",
+        },
+        "passwd": {
+            "value": "Please fill in",
+            "description": "WiFi Password",
+        },
+    },
+)
 
 
 class WiFi:
@@ -16,7 +32,7 @@ class WiFi:
     users = 0
     sta_if = WLAN(STA_IF)
 
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         self.app = app
 
     async def __aenter__(self):
@@ -42,13 +58,13 @@ class WiFi:
             cls.ev_change.set()
 
     async def connection_task(self):
-        log.msg('Start service ...')
+        log.msg("Start service ...")
         cls = type(self)
 
         while True:
             await cls.ev_change.wait()
 
-            log.dbg('Connecting ...')
+            log.dbg("Connecting ...")
             cls.sta_if.active(True)
             cls._connect()
             collect()
@@ -56,12 +72,12 @@ class WiFi:
             while not cls.sta_if.isconnected():
                 await sleep_ms(500)
 
-            log.msg('Connected:', cls.sta_if.ifconfig())
+            log.msg("Connected:", cls.sta_if.ifconfig())
             cls.ev_running.set()
             cls.ev_change.clear()
 
             await cls.ev_change.wait()
-            log.dbg('Disconnecting ...')
+            log.dbg("Disconnecting ...")
 
             cls.sta_if.disconnect()
             cls.sta_if.active(False)
@@ -70,9 +86,15 @@ class WiFi:
 
             cls.ev_change.clear()
             cls.ev_running.clear()
-            log.msg('Disconnected')
+            log.msg("Disconnected")
 
     @classmethod
-    def _connect(cls):
-        from config.wifi import ssid, passwd
-        cls.sta_if.connect(ssid, passwd)
+    def _connect(cls) -> None:
+        cls.sta_if.connect(config.ssid, config.passwd)
+
+
+__all__ = (
+    "WiFi",
+    "config",
+    "log",
+)

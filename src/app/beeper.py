@@ -1,19 +1,20 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
 
-from uasyncio import sleep_ms as asleep_ms, Event
-from time import sleep_ms
 from collections import deque, namedtuple
+from time import sleep_ms
+from uasyncio import Event, sleep_ms as asleep_ms
 
 
 class Beeper:
-    beepit = namedtuple('Beep', ('freq', 'duration', 'gap', 'cnt'))
+    beepit = namedtuple("Beep", ("freq", "duration", "gap", "cnt"))
 
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         self.app = app
         self.beeps = deque(tuple(), 128)
         self.event = Event()
 
-    def __call__(self, freq, duration, gap=0, cnt=1):
+    def __call__(self, freq, duration, gap=0, cnt=1) -> None:
         self.beeps.append(self.beepit(freq, duration, gap, cnt))
         self.event.set()
 
@@ -36,3 +37,6 @@ class Beeper:
                         await asleep_ms(beep.gap)
 
             event.clear()
+
+
+__all__ = ("Beeper",)

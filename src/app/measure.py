@@ -1,24 +1,26 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
 
 from com.logging import Logger
+from hal.vindriktning import config
+
 from micropython import const
-from uasyncio import sleep, Event
-import config.measure as config
+from uasyncio import Event, sleep
 
 
 log = Logger(__name__)
 
 
 class Measure:
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         self.app = app
         self.dust_ugpm3 = None
         self.co2_ppm = None
         self.temperature_dgc = None
         self.humidity_pc = None
-        self.temperature_method = 'SDC41' if app.vindriktning.temperature_sdc41 else 'DHT'
+        self.sensors = app.vindriktning.sensors
         self.light_pc = 100
-        self.light_method = 'ADC'
+        self.light_method = "ADC"
         self._new_data = Event()
 
     async def light_task(self):
@@ -26,7 +28,7 @@ class Measure:
 
         while True:
             self.light_pc = min(vindriktning.light * 0.392156863, 100)
-            self.light_method = 'ADC' if vindriktning.light_adc else 'IO'
+            self.light_method = "ADC" if vindriktning.light_adc else "IO"
             await sleep(2)
 
     async def co2_task(self):
@@ -42,7 +44,7 @@ class Measure:
             self.humidity_pc = vindriktning.humidity_pc
             self._new_data.set()
 
-            await sleep(config.period)
+            await sleep(config.period["main"])
 
     async def dust_task(self):
         vindriktning = self.app.vindriktning
@@ -57,13 +59,13 @@ class Measure:
 
                     acc = 0
                     avg_cnt = const(4)
-                    log.dbg(f'Averaging measured values (measure {avg_cnt} times)')
+                    log.dbg(f"Averaging measured values (measure {avg_cnt} times)")
 
                     for _ in range(avg_cnt):
                         dust_ugpm3 = vindriktning.dust_ugpm3
                         while 128 < dust_ugpm3:
                             dust_ugpm3 = vindriktning.dust_ugpm3
-                        log.dbg('\tSample', dust_ugpm3, 'ug/m3')
+                        log.dbg("\tSample", dust_ugpm3, "ug/m3")
                         acc += dust_ugpm3
                         await self._blink(6)
 
@@ -71,7 +73,7 @@ class Measure:
                 self.dust_ugpm3 = acc / avg_cnt
                 self._new_data.set()
 
-                await sleep(config.dust_period)
+                await sleep(config.period["dust"])
             else:
                 vindriktning.fan.off()
                 await sleep(120)
@@ -84,3 +86,9 @@ class Measure:
             await sleep(1)
             led[1] = (led[0] + led[2]) // 2
             await sleep(1)
+
+
+__all__ = (
+    "Measure",
+    "log",
+)

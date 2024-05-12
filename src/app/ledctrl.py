@@ -1,17 +1,19 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
+
+from com.color import Rgb
 
 from uasyncio import sleep_ms
-from com.color import Rgb
 
 
 class LedCtrl(list):
     BLACK = Rgb(0, 0, 0)
     GRAY = Rgb(96, 96, 96)
 
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         super().__init__([self.BLACK] * 3)
         self.app = app
-        self.min = b'\x00\x00\x00', b'\x00\x00\x00', b'\x00\x00\x00'
+        self.min = b"\x00\x00\x00", b"\x00\x00\x00", b"\x00\x00\x00"
 
     async def animate_task(self):
         led = self.app.vindriktning.led
@@ -32,3 +34,6 @@ class LedCtrl(list):
             led.write()
 
             await sleep_ms(round(50 - 40 * gain))
+
+
+__all__ = ("LedCtrl",)

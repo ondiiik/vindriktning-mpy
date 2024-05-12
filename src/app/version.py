@@ -1,15 +1,22 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
+from __future__ import annotations
 
 
 class Version(tuple):
-    def __init__(self, major, minor):
+    def __init__(self, major, minor) -> None:
         super().__init__((major, minor))
 
-    def __repr__(self):
-        return f'v{self[0]}.{self[1]}'
+    def __repr__(self) -> None:
+        return f"v{self[0]}.{self[1]}"
 
-    def __str__(self):
+    def __str__(self) -> None:
         return repr(self)
 
 
-version = Version(1, 2)
+version = Version(2, 0)
+
+
+__all__ = (
+    "Version",
+    "version",
+)
