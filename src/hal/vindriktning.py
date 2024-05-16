@@ -39,8 +39,8 @@ config = Cfg(
         },
         "sht40": {
             "value": {
-                "temp_shift": 0,
-                "humi_shift": 0,
+                "temp_shift": -1.67,
+                "humi_shift": -10,
             },
             "description": "Values shift (calibration because of ESP32 heating)",
         },

@@ -105,12 +105,22 @@ By default there are following built-in plugins:
 
 1. Download and install [python](https://www.python.org/).
 2. Install [esptool](https://github.com/espressif/esptool) by command `pip install esptool`.
-3. Download [precompiled Micropython firmware from this repository](https://raw.githubusercontent.com/ondiiik/vindriktning-mpy/main/mpy/fw/esp32-vindriktning-mpy.bin).
-4. Erase chip by following command `esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash` (choose port where your device is connected - `COM`*n* on Windows)
-5. Flash downloaded firmware by command `esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 esp32-vindriktning-mpy.bin`
+3. Download [precompiled Micropython firmware from this repository](https://raw.githubusercontent.com/ondiiik/vindriktning-mpy/main/mpy/fw) (all `bin` files are required).
+4. Erase chip by following command:
 
-When all steps above succeeded, you can switch the device on. All python files are already built-in as frozen modules
-and device shall start immediatelly. All configuration files are created when device boot up.
+```
+esptool.py -b 460800 --chip esp32 --port /dev/ttyUSB0 erase_flash` (choose port where your device is connected - `COM`*n* on Windows)
+```
+
+5. Flash downloaded firmware by following command:
+
+```
+esptool.py -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
+```
+
+When all steps above succeeded, you can switch the device off and on. All python files are already built-in as frozen modules
+and device shall start immediatelly (there is no need to upload any python code). All configuration files are created when device
+boot up.
 
 #### Additional tweaking
 
@@ -139,11 +149,19 @@ Once we have file system accesible via [thonny](https://thonny.org/), we can edi
 Files are created by default with description so it shall be obvious what, whyv and how it can be changed.
 You can now set-up e.g. WiFi connection, enable some defaultly disabled plugins or set their parameters.
 
+### Running modified or fixed code
+
+All python modules are already built in as part of flashed binary, however if you feel you need to fix or modify something
+in code, simply upload any of modified modules (python files) to file system. When python starts it primarily search
+for modules on file system and when they are not found, the frozen module is loaded instead. This allow to replace any of
+built-in python code by your custom code without need to compile new micropython binary.
+
 ### Plugins
 
 Software is written to support core user functionality by plugins. This plugins are loaded automatically from folder
-`plugins`. There are several plugins already present po provide some basic functionality or as some examples
-for those who wants to write his own.
+`plugins`. Plugins are written in python and there are several plugins already present po provide some basic functionality
+or as some examples for those who wants to write his own (have a look into folder
+[src/app/plugins](https://github.com/ondiiik/vindriktning-mpy/tree/main/src/app/plugins)).
 
 #### `sensor_to_led`
 

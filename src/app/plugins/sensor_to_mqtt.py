@@ -81,7 +81,7 @@ class Sensor2Mqtt(Plugin):
         log.dbg(f'      state_topic: "{self.cfg.topic}"')
         log.dbg('      unit_of_measurement: "°C"')
         log.dbg('      value_template: "{{ value_json.temp }}"')
-        log.dbg('    - name: "My own temperature sensor name (please fill in)"')
+        log.dbg('    - name: "My own humidity sensor name (please fill in)"')
         log.dbg(f'      unique_id: "{self.cfg.topic.replace("/","_")}_humi"')
         log.dbg('      icon: "mdi:water-percent"')
         log.dbg(f'      state_topic: "{self.cfg.topic}"')
