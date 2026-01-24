@@ -4,9 +4,10 @@ from __future__ import annotations
 from .plugins import Plugin, co2_alert, sensor_to_led, sensor_to_mqtt
 
 from com.logging import Logger
+
+from asyncio import create_task
 from gc import collect
 from os import ilistdir, mkdir
-from uasyncio import create_task
 
 
 log = Logger(__name__)
@@ -44,7 +45,7 @@ class Dispatcher:
                 except AttributeError:
                     pass
 
-    async def dispatch_task(self):
+    async def dispatch_task(self) -> None:
         plugins = self.plugins.values()
 
         if plugins:

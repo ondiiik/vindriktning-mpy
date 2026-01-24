@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from com.color import Rgb
 
-from uasyncio import sleep_ms
+from asyncio import sleep_ms
 
 
 class LedCtrl(list):
@@ -15,7 +15,7 @@ class LedCtrl(list):
         self.app = app
         self.min = b"\x00\x00\x00", b"\x00\x00\x00", b"\x00\x00\x00"
 
-    async def animate_task(self):
+    async def animate_task(self) -> None:
         led = self.app.vindriktning.led
         measure = self.app.measure
         firg = 0.0

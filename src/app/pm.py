@@ -4,9 +4,9 @@ from __future__ import annotations
 from com.logging import Logger
 from config import Cfg
 
+from asyncio import sleep_ms
 from machine import WDT, freq, lightsleep
 from time import sleep_ms as ssleep_ms
-from uasyncio import sleep_ms
 
 
 log = Logger(__name__)
@@ -30,7 +30,7 @@ class PowerManagement:
         def __init__(self) -> None:
             self.users = 0
 
-        def __enter__(self) -> None:
+        def __enter__(self) -> PowerManagement.Users:
             self.users += 1
             return self
 
@@ -41,7 +41,7 @@ class PowerManagement:
         self.app = app
         self.disabled = self.Users()
 
-    async def pm_task(self):
+    async def pm_task(self) -> None:
         log.msg("Power management", "enabled" if config.pm_enabled else "disabled")
 
         wdt = WDT(timeout=config.wdt_time * 1000)

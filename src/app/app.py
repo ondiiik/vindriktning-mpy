@@ -1,7 +1,6 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
 from __future__ import annotations
 
-
 from .beeper import Beeper
 from .dispatch import Dispatcher
 from .ledctrl import LedCtrl
@@ -9,20 +8,23 @@ from .measure import Measure
 from .networking import WiFi
 from .pm import PowerManagement
 from .version import version
+
 from com.color import Rgb
+from com.exception import print_exc
 from com.logging import Logger
 from hal.vindriktning import Vindriktning
-from machine import PWRON_RESET, reset_cause
+
+from asyncio import create_task, gather, get_event_loop, run, sleep_ms
+from machine import PWRON_RESET, deepsleep, reset_cause
 from time import sleep
-from uasyncio import create_task, sleep_ms
 
 
-log = Logger(__name__)
+_log = Logger(__name__)
 
 
 class App:
     def __init__(self) -> None:
-        log.msg("Starting version", version)
+        _log.msg("Starting version", version)
         self.version = version
         self.vindriktning = Vindriktning()
         self.pm = PowerManagement(self)
@@ -53,21 +55,44 @@ class App:
 
         self.dispatcher = Dispatcher(self)
 
-    async def __call__(self):
-        create_task(self.measure.light_task())
-        create_task(self.measure.co2_task())
-        create_task(self.measure.dust_task())
-        create_task(self.dispatcher.dispatch_task())
-        create_task(self.led.animate_task())
-        create_task(self.beep.beep_task())
-        create_task(self.wifi.connection_task())
-        create_task(self.pm.pm_task())
+    def __call__(self) -> None:
+        run(self._run())
 
-        while True:
-            await sleep_ms(60000)
+    async def _run(self) -> None:
+        try:
+            _log.msg("Initializing coroutines scheduler")
+
+            def handle_exception(loop, context):
+                exception = context["exception"]
+                print_exc(exception)
+                if isinstance(exception, KeyboardInterrupt):
+                    exit()
+                else:
+                    self._reset()
+
+            loop = get_event_loop()
+            loop.set_exception_handler(handle_exception)
+
+            _log.msg("Launching application")
+            await gather(
+                self.measure.light_task(),
+                self.measure.co2_task(),
+                self.measure.dust_task(),
+                self.dispatcher.dispatch_task(),
+                self.led.animate_task(),
+                self.beep.beep_task(),
+                self.wifi.connection_task(),
+                self.pm.pm_task(),
+            )
+        except Exception as exception:
+            print_exc(exception)
+            self._reset()
+
+    @staticmethod
+    def _reset() -> None:
+        _log.msg("5 seconds to reboot ...")
+        sleep(5)
+        deepsleep(1)
 
 
-__all__ = (
-    "App",
-    "log",
-)
+__all__ = ("App",)

@@ -12,29 +12,29 @@ import time
 
 _RESET = const(0x94)
 
-HIGH_PRECISION = const(0xFD)
-MEDIUM_PRECISION = const(0xF6)
-LOW_PRECISION = const(0xE0)
+_HIGH_PRECISION = const(0xFD)
+_MEDIUM_PRECISION = const(0xF6)
+_LOW_PRECISION = const(0xE0)
 _p2s = {
-    HIGH_PRECISION: "HIGH_PRECISION",
-    MEDIUM_PRECISION: "MEDIUM_PRECISION",
-    LOW_PRECISION: "LOW_PRECISION",
+    _HIGH_PRECISION: "HIGH_PRECISION",
+    _MEDIUM_PRECISION: "MEDIUM_PRECISION",
+    _LOW_PRECISION: "LOW_PRECISION",
 }
 
-HEATER_200mW = b"\0x39\0x32"
-HEATER_110mW = b"\0x2F\0x24"
-HEATER_20mW = b"\0x1E\0x15"
+_HEATER_200MW = b"\0x39\0x32"
+_HEATER_110MW = b"\0x2F\0x24"
+_HEATER_20MW = b"\0x1E\0x15"
 _h2s = {
-    HEATER_200mW: "HEATER_200mW",
-    HEATER_110mW: "HEATER_110mW",
-    HEATER_20mW: "HEATER_20mW",
+    _HEATER_200MW: "HEATER_200mW",
+    _HEATER_110MW: "HEATER_110mW",
+    _HEATER_20MW: "HEATER_20mW",
 }
 
-TEMP_1 = const(0)
-TEMP_0_1 = const(1)
+_TEMP_1 = const(0)
+_TEMP_0_1 = const(1)
 _t2s = {
-    TEMP_1: "TEMP_1",
-    TEMP_0_1: "TEMP_0_1",
+    _TEMP_1: "TEMP_1",
+    _TEMP_0_1: "TEMP_0_1",
 }
 
 
@@ -45,9 +45,9 @@ class SHT4X:
         self._data = bytearray(6)
 
         self._command = 0xFD
-        self._temperature_precision = HIGH_PRECISION
-        self._heater_power = HEATER_20mW
-        self._heat_time = TEMP_0_1
+        self._temperature_precision = _HIGH_PRECISION
+        self._heater_power = _HEATER_20MW
+        self._heat_time = _TEMP_0_1
 
     @property
     def temperature_precision(self) -> str:
@@ -123,14 +123,4 @@ class SHT4X:
         return crc & 0xFF
 
 
-__all__ = (
-    "HEATER_110mW",
-    "HEATER_200mW",
-    "HEATER_20mW",
-    "HIGH_PRECISION",
-    "LOW_PRECISION",
-    "MEDIUM_PRECISION",
-    "SHT4X",
-    "TEMP_0_1",
-    "TEMP_1",
-)
+__all__ = ("SHT4X",)

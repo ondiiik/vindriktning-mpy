@@ -8,8 +8,9 @@ from __future__ import annotations
 from micropython import const
 import struct
 import time
+from typing import Tuple
 
-SCD4X_DEFAULT_ADDR = 0x62
+_SCD4X_DEFAULT_ADDR = const(0x62)
 _SCD4X_REINIT = const(0x3646)
 _SCD4X_FACTORYRESET = const(0x3632)
 _SCD4X_FORCEDRECAL = const(0x362F)
@@ -31,7 +32,7 @@ _SCD4X_SETASCE = const(0x2416)
 
 
 class SCD4X:
-    def __init__(self, i2c, address=SCD4X_DEFAULT_ADDR) -> None:
+    def __init__(self, i2c, address=_SCD4X_DEFAULT_ADDR) -> None:
         self._i2c = i2c
         self._addr = address
         self._buffer = memoryview(bytearray(18))
@@ -45,7 +46,7 @@ class SCD4X:
 
         self.stop_periodic_measurement()
 
-    def measure(self) -> tuple[float, float]:  # Temperature, Humidity, CO2 ppm
+    def measure(self) -> Tuple[float, float]:  # Temperature, Humidity, CO2 ppm
         if self.data_ready:
             self._read_data()
         return self._temperature, self._relative_humidity, self._co2
@@ -102,7 +103,7 @@ class SCD4X:
         return not ((self._buffer[0] & 0x07 == 0) and (self._buffer[1] == 0))
 
     @property
-    def serial_number(self) -> None:
+    def serial_number(self) -> Tuple[int, int, int, int, int, int]:
         self._send_command(_SCD4X_SERIALNUMBER, cmd_delay=0.001)
         self._read_reply(self._buffer, 9)
         return (
@@ -205,7 +206,4 @@ class SCD4X:
         return crc & 0xFF  # return the bottom 8 bits
 
 
-__all__ = (
-    "SCD4X",
-    "SCD4X_DEFAULT_ADDR",
-)
+__all__ = ("SCD4X",)

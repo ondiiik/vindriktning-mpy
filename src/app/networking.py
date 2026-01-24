@@ -4,10 +4,11 @@ from __future__ import annotations
 from com.logging import Logger
 from config import Cfg
 
+from asyncio import Event, sleep_ms
 from gc import collect
 from machine import lightsleep
 from network import STA_IF, WLAN
-from uasyncio import Event, sleep_ms
+from typing import Type
 
 
 log = Logger(__name__)
@@ -35,7 +36,7 @@ class WiFi:
     def __init__(self, app) -> None:
         self.app = app
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Type[WiFi]:
         self.app.pm.disabled.__enter__()
 
         cls = type(self)
@@ -48,7 +49,7 @@ class WiFi:
 
         return cls
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         self.app.pm.disabled.__exit__(exc_type, exc_val, exc_tb)
 
         cls = type(self)
@@ -57,7 +58,7 @@ class WiFi:
         if cls.users == 0:
             cls.ev_change.set()
 
-    async def connection_task(self):
+    async def connection_task(self) -> None:
         log.msg("Start service ...")
         cls = type(self)
 

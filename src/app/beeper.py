@@ -1,9 +1,9 @@
 # MIT license; Copyright (c) 2022 Ondrej Sienczak
 from __future__ import annotations
 
+from asyncio import Event, sleep_ms as asleep_ms
 from collections import deque, namedtuple
 from time import sleep_ms
-from uasyncio import Event, sleep_ms as asleep_ms
 
 
 class Beeper:
@@ -18,7 +18,7 @@ class Beeper:
         self.beeps.append(self.beepit(freq, duration, gap, cnt))
         self.event.set()
 
-    async def beep_task(self):
+    async def beep_task(self) -> None:
         buzzer = self.app.vindriktning.buzzer
         beeps = self.beeps
         event = self.event

@@ -2,17 +2,17 @@
 from __future__ import annotations
 
 from .scd4x import SCD4X
-from .sht4x import HIGH_PRECISION, SHT4X
+from .sht4x import SHT4X
 
 from com.color import Rgb
 from com.logging import Logger
 from config import Cfg
 
+from asyncio import sleep_ms
 from dht import DHT22
 from machine import ADC, PWM, Pin, SoftI2C, UART, deepsleep
 from micropython import const
 from neopixel import NeoPixel
-from uasyncio import sleep_ms
 
 
 log = Logger(__name__)
@@ -131,7 +131,7 @@ class Vindriktning:
             log.dbg("SHT40 not found - skipping")
             self._sht40 = None
 
-    async def data_refresh(self):
+    async def data_refresh(self) -> None:
         while not self._sdc41.data_ready:
             await sleep_ms(250)
 
@@ -153,7 +153,7 @@ class Vindriktning:
         self.humidity_pc = round(min(max(humidity_pc, 0), 100), 2)
 
     @property
-    def dust_ugpm3(self) -> None:
+    def dust_ugpm3(self) -> int:
         rx = self._buff
 
         while True:
@@ -165,11 +165,11 @@ class Vindriktning:
                 return data[5] * 256 + data[6]
 
     @property
-    def temperature_sdc41(self) -> None:
+    def temperature_sdc41(self) -> bool:
         return self._dht is None
 
     @property
-    def light(self) -> None:
+    def light(self) -> int:
         if self.light_adc:
             try:
                 self._light_restore = (
@@ -189,7 +189,7 @@ class Vindriktning:
             return 0 if self._light.value() else 255
 
     @property
-    def light_adc(self) -> None:
+    def light_adc(self) -> bool:
         return isinstance(self._light, ADC)
 
     def light_reinit(self) -> None:

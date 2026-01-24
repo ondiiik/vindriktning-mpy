@@ -3,17 +3,17 @@ from __future__ import annotations
 
 
 class Version(tuple):
-    def __init__(self, major, minor) -> None:
+    def __init__(self, major: int, minor: int) -> None:
         super().__init__((major, minor))
 
-    def __repr__(self) -> None:
+    def __repr__(self) -> str:
         return f"v{self[0]}.{self[1]}"
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         return repr(self)
 
 
-version = Version(2, 0)
+version = Version(2, 2)
 
 
 __all__ = (
