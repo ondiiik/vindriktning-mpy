@@ -4,7 +4,7 @@ from __future__ import annotations
 # from .app import App
 
 from config import Cfg
-from uasyncio import Event
+from asyncio import Event
 
 
 class Plugin:

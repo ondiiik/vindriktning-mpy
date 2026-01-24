@@ -5,8 +5,9 @@ from .plugins import Plugin
 
 from com.logging import Logger
 
+from asyncio import sleep
+from errno import ECONNABORTED
 from machine import unique_id
-from uasyncio import sleep
 from ubinascii import hexlify
 from ujson import dumps
 from umqtt.simple import MQTTClient
@@ -137,6 +138,11 @@ class Sensor2Mqtt(Plugin):
 
             except OSError as e:
                 log.err("MQTT connection reported", e)
+                if e.errno == ECONNABORTED:
+                    log.err(
+                        "It seems that ESP32 WiFi stack is in unstable state - REBOOTING!"
+                    )
+                    self.app.reset()
                 log.dbg("Retry in", self.cfg.retry_time, "seconds")
                 await sleep(self.cfg.retry_time)
 

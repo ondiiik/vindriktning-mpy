@@ -37,8 +37,6 @@ class WiFi:
         self.app = app
 
     async def __aenter__(self) -> Type[WiFi]:
-        self.app.pm.disabled.__enter__()
-
         cls = type(self)
         cls.users += 1
 
@@ -50,8 +48,6 @@ class WiFi:
         return cls
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.app.pm.disabled.__exit__(exc_type, exc_val, exc_tb)
-
         cls = type(self)
         cls.users -= 1
 
@@ -65,23 +61,29 @@ class WiFi:
         while True:
             await cls.ev_change.wait()
 
-            log.dbg("Connecting ...")
-            cls.sta_if.active(True)
-            cls._connect()
-            collect()
+            with self.app.pm.disabled:
+                log.dbg("Connecting ...")
+                cls.sta_if.active(True)
+                cls._connect()
+                collect()
 
-            while not cls.sta_if.isconnected():
-                await sleep_ms(500)
+                while not cls.sta_if.isconnected():
+                    await sleep_ms(500)
 
-            log.msg("Connected:", cls.sta_if.ifconfig())
-            cls.ev_running.set()
-            cls.ev_change.clear()
+                log.msg("Connected:", cls.sta_if.ifconfig())
+                cls.ev_running.set()
+                cls.ev_change.clear()
 
-            await cls.ev_change.wait()
-            log.dbg("Disconnecting ...")
+                await cls.ev_change.wait()
+                log.dbg("Disconnecting ...")
 
-            cls.sta_if.disconnect()
-            cls.sta_if.active(False)
+                cls.sta_if.disconnect()
+                cls.sta_if.config(
+                    pm=0
+                )  # Prevent from "E (114888) wifi:mac deinit fail, txing can't stop, exit!"
+                await sleep_ms(1000)
+                cls.sta_if.active(False)
+
             lightsleep(1)
             self.app.vindriktning.light_reinit()
 

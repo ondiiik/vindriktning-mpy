@@ -58,6 +58,12 @@ class App:
     def __call__(self) -> None:
         run(self._run())
 
+    @staticmethod
+    def reset() -> None:
+        _log.msg("5 seconds to reboot ...")
+        sleep(5)
+        deepsleep(1)
+
     async def _run(self) -> None:
         try:
             _log.msg("Initializing coroutines scheduler")
@@ -68,7 +74,7 @@ class App:
                 if isinstance(exception, KeyboardInterrupt):
                     exit()
                 else:
-                    self._reset()
+                    self.reset()
 
             loop = get_event_loop()
             loop.set_exception_handler(handle_exception)
@@ -86,13 +92,7 @@ class App:
             )
         except Exception as exception:
             print_exc(exception)
-            self._reset()
-
-    @staticmethod
-    def _reset() -> None:
-        _log.msg("5 seconds to reboot ...")
-        sleep(5)
-        deepsleep(1)
+            self.reset()
 
 
 __all__ = ("App",)

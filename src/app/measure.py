@@ -4,8 +4,8 @@ from __future__ import annotations
 from com.logging import Logger
 from hal.vindriktning import config
 
+from asyncio import Event, sleep
 from micropython import const
-from uasyncio import Event, sleep
 
 
 log = Logger(__name__)
