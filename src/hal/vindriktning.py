@@ -65,8 +65,8 @@ _uart = UART(2, baudrate=9600)
 _uart.read()
 _uart.write(_cmd)
 
-_LIGHTS_HIGH = const(3000)
-_LIGHTS_REST = const(4095 - _LIGHTS_HIGH)
+_LIGHTS_HIGH = const(48011)
+_LIGHTS_REST = const(65535 - _LIGHTS_HIGH)
 
 
 class Buzzer:
@@ -172,11 +172,13 @@ class Vindriktning:
     def light(self) -> int:
         if self.light_adc:
             try:
-                self._light_restore = (
-                    (_LIGHTS_REST - max(self._light.read() - _LIGHTS_HIGH, 0))
-                    * 255
-                    // _LIGHTS_REST
-                )
+                adc = self._light.read_u16()
+                if adc != 0:
+                    self._light_restore = (
+                        (_LIGHTS_REST - max(adc - _LIGHTS_HIGH, 0))
+                        * 255
+                        // _LIGHTS_REST
+                    )
                 return self._light_restore
             except OSError:
                 if config.light_restore:
