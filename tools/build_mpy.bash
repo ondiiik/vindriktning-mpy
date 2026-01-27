@@ -48,8 +48,11 @@ cp -f "$SRC_ROOT/tools/mpconfigboard.cmake" "$BUILD_ROOT/micropython/ports/esp32
 
 
 # Build MicroPython firmware
+rm -rf "$BUILD_ROOT/micropython/ports/esp32/build-ESP32_GENERIC"
+rm -f "$BUILD_ROOT/vindriktning-mpy.bin"
 cd "$BUILD_ROOT/micropython"
 make -C mpy-cross
 cd "$BUILD_ROOT/micropython/ports/esp32"
 make submodules
-make
+make all
+cp "$BUILD_ROOT/micropython/ports/esp32/build-ESP32_GENERIC/firmware.bin" "$BUILD_ROOT/vindriktning-mpy.bin"

@@ -18,7 +18,7 @@ config = Cfg(
             "description": "Set this true to enable power management and prevent from ESP32 heating",
         },
         "wdt_time": {
-            "value": 90,
+            "value": 10,
             "description": "Watchdog time in seconds",
         },
     },

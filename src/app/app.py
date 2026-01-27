@@ -6,7 +6,7 @@ from .dispatch import Dispatcher
 from .ledctrl import LedCtrl
 from .measure import Measure
 from .networking import WiFi
-from .pm import PowerManagement
+from .pm import PowerManagement, config
 from .version import version
 
 from com.color import Rgb
@@ -59,9 +59,12 @@ class App:
         run(self._run())
 
     @staticmethod
-    def reset() -> None:
-        _log.msg("5 seconds to reboot ...")
-        sleep(5)
+    def reset(exception: Exception | None = None) -> None:
+        if exception:
+            _log.err(f"REBOOT REQUESTED BY EXCEPTION: {type(exception)} -> {exception}")
+            print_exc(exception)
+        _log.msg(f"Waiting {config.wdt_time} seconds to reboot ...")
+        sleep(config.wdt_time + 1)
         deepsleep(1)
 
     async def _run(self) -> None:
@@ -70,11 +73,10 @@ class App:
 
             def handle_exception(loop, context):
                 exception = context["exception"]
-                print_exc(exception)
                 if isinstance(exception, KeyboardInterrupt):
                     exit()
                 else:
-                    self.reset()
+                    self.reset(exception)
 
             loop = get_event_loop()
             loop.set_exception_handler(handle_exception)
@@ -91,8 +93,7 @@ class App:
                 self.pm.pm_task(),
             )
         except Exception as exception:
-            print_exc(exception)
-            self.reset()
+            self.reset(exception)
 
 
 __all__ = ("App",)

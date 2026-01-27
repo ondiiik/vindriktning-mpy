@@ -105,17 +105,17 @@ By default there are following built-in plugins:
 
 1. Download and install [python](https://www.python.org/).
 2. Install [esptool](https://github.com/espressif/esptool) by command `pip install esptool`.
-3. Download [precompiled Micropython firmware from this repository](https://raw.githubusercontent.com/ondiiik/vindriktning-mpy/main/mpy/fw) (all `bin` files are required).
+3. Download [precompiled Micropython firmware from release section](https://github.com/ondiiik/vindriktning-mpy/releases) (file `vindriktning-mpy.bin`).
 4. Erase chip by following command:
 
 ```
-esptool.py -b 460800 --chip esp32 --port /dev/ttyUSB0 erase_flash` (choose port where your device is connected - `COM`*n* on Windows)
+esptool.py --baud 460800 erase_flash
 ```
 
 5. Flash downloaded firmware by following command:
 
 ```
-esptool.py -b 460800 --before default_reset --after hard_reset --chip esp32  write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 bootloader.bin 0x8000 partition-table.bin 0x10000 micropython.bin
+esptool.py --baud 460800 write_flash 0x1000 vindriktning-mpy.bin
 ```
 
 When all steps above succeeded, you can switch the device off and on. All python files are already built-in as frozen modules

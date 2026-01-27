@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from .plugins import Plugin
 
+from com.exception import print_exc
 from com.logging import Logger
 
 from asyncio import sleep
@@ -136,9 +137,9 @@ class Sensor2Mqtt(Plugin):
 
                 await sleep(self.cfg.period)
 
-            except OSError as e:
-                log.err("MQTT connection reported", e)
-                if e.errno == ECONNABORTED:
+            except OSError as exception:
+                log.err("MQTT connection reported", exception)
+                if exception.errno == ECONNABORTED:
                     log.err(
                         "It seems that ESP32 WiFi stack is in unstable state - REBOOTING!"
                     )
