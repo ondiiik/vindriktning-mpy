@@ -4,7 +4,6 @@ from __future__ import annotations
 from .scd4x import SCD4X
 from .sht4x import SHT4X
 
-from com.color import Rgb
 from com.logging import Logger
 from config import Cfg
 
@@ -16,7 +15,34 @@ from neopixel import NeoPixel
 
 
 log = Logger(__name__)
-config = Cfg(
+class config:
+    hardware = Cfg(
+        "hardware",
+        {
+            "buzzer": {
+                "pin": 13,
+                "inverted": False,
+                "active": False,
+            },
+            "led": {
+                "pin": 25,
+            },
+            "fan": {
+                "pin": 12,
+            },
+            "light": {
+                "pin": 4,
+            },
+            "dht22": {
+                "pin": 5,
+            },
+            "i2c": {
+                "sda": 21,
+                "scl": 22,
+            },
+        }
+    )
+    measure = Cfg(
     "measure",
     {
         "period": {
@@ -71,35 +97,48 @@ _LIGHTS_REST = const(65535 - _LIGHTS_HIGH)
 
 class Buzzer:
     def __init__(self) -> None:
-        self._pin = Pin(13, Pin.OUT)
-        self._pin.off()
+        self._pin = Pin(config.hardware["buzzer"]["pin"], Pin.OUT)
+        self._p0 = config.hardware["buzzer"]["inverted"]
+        self._pin.value(self._p0)
+        if config.hardware["buzzer"]["active"]:
+            self.on = self._on_pin
+            self.off = self._off_pin
+        else:
+            self.on = self._on_pwm
+            self.off = self._off_pwm
 
-    def on(self, freq) -> None:
+    def _on_pwm(self, freq) -> None:
         self._pwm = PWM(self._pin, freq=freq, duty=512)
 
-    def off(self) -> None:
+    def _off_pwm(self) -> None:
         self._pwm.deinit()
-        self._pin.off()
+        self._pin.value(self._p0)
+
+    def _on_pin(self, freq) -> None:
+        self._pin.value(not self._p0)
+
+    def _off_pin(self) -> None:
+        self._pin.value(self._p0)
 
 
 class Vindriktning:
     class Led(NeoPixel):
         def __init__(self) -> None:
-            super().__init__(Pin(25, Pin.OUT), 3)
+            super().__init__(Pin(config.hardware["led"]["pin"], Pin.OUT), 3)
             for i in range(3):
                 self[i] = b"\x00\x00\x00"
             self.write()
 
     def __init__(self) -> None:
         self.led = self.Led()
-        self.fan = Pin(12, Pin.OUT)
+        self.fan = Pin(config.hardware["fan"]["pin"], Pin.OUT)
         self.buzzer = Buzzer()
         self._i2c = SoftI2C(
-            scl=Pin(22), sda=Pin(21), freq=400000
+            scl=Pin(config.hardware["i2c"]["scl"]), sda=Pin(config.hardware["i2c"]["sda"]), freq=400000
         )  # SHT40 does not work with HW I2C
         self._sdc41 = SCD4X(self._i2c)
         self._sht40 = SHT4X(self._i2c)
-        self._dht = DHT22(Pin(5))
+        self._dht = DHT22(Pin(config.hardware["dht22"]["pin"]))
         self._uart = _uart
         self._dcmd = _cmd
         self._buff = bytearray(20)
@@ -107,7 +146,7 @@ class Vindriktning:
         self._sdc41.start_periodic_measurement()
 
         try:
-            self._light = ADC(Pin(4), atten=ADC.ATTN_11DB)
+            self._light = ADC(Pin(config.hardware["light"]["pin"]), atten=ADC.ATTN_11DB)
         except ValueError:
             log.msg("ADC occupied by WiFi - rebooting")
             deepsleep(1)
@@ -139,15 +178,15 @@ class Vindriktning:
 
         if self._sht40 is not None:
             temperature_dgc, humidity_pc = self._sht40.measure()
-            temperature_dgc += config.sht40["temp_shift"]
-            humidity_pc += config.sht40["humi_shift"]
+            temperature_dgc += config.measure.sht40["temp_shift"]
+            humidity_pc += config.measure.sht40["humi_shift"]
         elif self._dht is not None:
             self._dht.measure()
-            temperature_dgc = self._dht.temperature() + config.dht22["temp_shift"]
-            humidity_pc = self._dht.humidity() + config.dht22["humi_shift"]
+            temperature_dgc = self._dht.temperature() + config.measure.dht22["temp_shift"]
+            humidity_pc = self._dht.humidity() + config.measure.dht22["humi_shift"]
         else:
-            temperature_dgc += config.scd41["temp_shift"]
-            humidity_pc += config.scd41["humi_shift"]
+            temperature_dgc += config.measure.scd41["temp_shift"]
+            humidity_pc += config.measure.scd41["humi_shift"]
 
         self.temperature_dgc = round(temperature_dgc, 2)
         self.humidity_pc = round(min(max(humidity_pc, 0), 100), 2)
@@ -181,11 +220,11 @@ class Vindriktning:
                     )
                 return self._light_restore
             except OSError:
-                if config.light_restore:
+                if config.measure.light_restore:
                     return self._light_restore
                 else:
                     log.wrn("Reconfiguring light sensor to be used with WiFi")
-                    self._light = Pin(4, Pin.IN)
+                    self._light = Pin(config.hardware["light"]["pin"], Pin.IN)
                     return self.light
         else:
             return 0 if self._light.value() else 255
@@ -195,7 +234,7 @@ class Vindriktning:
         return isinstance(self._light, ADC)
 
     def light_reinit(self) -> None:
-        self._light = ADC(Pin(4), atten=ADC.ATTN_11DB)
+        self._light = ADC(Pin(config.hardware["light"]["pin"]), atten=ADC.ATTN_11DB)
 
 
 __all__ = (
