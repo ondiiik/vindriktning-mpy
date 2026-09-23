@@ -1,5 +1,6 @@
 # VINDRIKTNING ESP32
 
+
 ## About this project
 
 This project takes [Ikea VINDRIKTNING air dust sensor](https://www.ikea.com/de/de/p/vindriktning-luftqualitaetssensor-70498242/)
@@ -9,6 +10,7 @@ several sensors such as [SCD41](https://www.laskakit.cz/laskakit-scd41-senzor-co
 [SHT40 (optional)](https://www.laskakit.cz/laskakit-sht40-senzor-teploty-a-vlhkosti-vzduchu/) for full measuring of air quality.
 
 ![VINDRIKTNING](doc/vindriktning.jpg) ![VINDRIKTNING-ESP32](doc/vindriktning-esp-32.jpg)
+
 
 ## Hardware
 
@@ -79,6 +81,7 @@ You can see wiring of external sensors here:
          ---
 ```
 
+
 ## Software
 
 As base software platform have been used [Micropython](https://micropython.org/), as it is relatively robust, lean and
@@ -99,28 +102,38 @@ By default there are following built-in plugins:
 - `sensor_to_mqtt` used to send sensors values to [MQTT](https://mqtt.org/) broker so they can be later processed e.g. by [Home Assistant](https://www.home-assistant.io/) or another MQTT client.
 - `co2_alert` alerts you when CO2 amount in room reaches above certain limit.
 
+
 ### Micropython
 
-#### Install
 
-1. Download and install [python](https://www.python.org/).
-2. Install [esptool](https://github.com/espressif/esptool) by command `pip install esptool`.
-3. Download [precompiled Micropython firmware from release section](https://github.com/ondiiik/vindriktning-mpy/releases) (file `vindriktning-mpy.bin`).
-4. Erase chip by following command:
+#### Firmware
+
+To get firmware, you can simply download one from [releases section](https://github.com/ondiiik/vindriktning-mpy/releases),
+or build it by yourself by following command from root of this project:
+
+```
+tools/build_mpy.bash
+```
+
+On build success the compiled firmware binary shall be located in `.out/vindriktning-mpy.bin`. 
+
+
+Once you have firmware downloaded, erase chip by following command (just for sure):
 
 ```
 esptool.py --baud 460800 erase_flash
 ```
 
-5. Flash downloaded firmware by following command:
+Then flash downloaded firmware by following command:
 
 ```
 esptool.py --baud 460800 write_flash 0x1000 vindriktning-mpy.bin
 ```
 
-When all steps above succeeded, you can switch the device off and on. All python files are already built-in as frozen modules
-and device shall start immediatelly (there is no need to upload any python code). All configuration files are created when device
-boot up.
+Device is automatically rebooted after flash procedure. All python files are already built-in as frozen modules
+and device shall start immediatelly (there is no need to upload any python code). All configuration files
+are created when device boot up.
+
 
 #### Additional tweaking
 
@@ -143,25 +156,34 @@ Then you shall be able to see python repl prompt and files stored in device.
 
 ![Thonny](doc/thonny4.png)
 
+
 ### Configuration
 
 Once we have file system accesible via [thonny](https://thonny.org/), we can edit any of created `json` files.
 Files are created by default with description so it shall be obvious what, whyv and how it can be changed.
 You can now set-up e.g. WiFi connection, enable some defaultly disabled plugins or set their parameters.
 
+
 ### Running modified or fixed code
 
 All python modules are already built in as part of flashed binary, however if you feel you need to fix or modify something
-in code, simply upload any of modified modules (python files) to file system. When python starts it primarily search
-for modules on file system and when they are not found, the frozen module is loaded instead. This allow to replace any of
-built-in python code by your custom code without need to compile new micropython binary.
+in code, simply upload all python source files to file system. When python starts it primarily search for modules
+on file system and when they are not found, the frozen module is loaded instead. This allow to replace any of
+built-in python code by your custom code without need to compile new micropython binary. This approach can be
+very convenient if you want to fix some bugs or develop custom plugin.
+
 
 ### Plugins
 
 Software is written to support core user functionality by plugins. This plugins are loaded automatically from folder
-`plugins`. Plugins are written in python and there are several plugins already present po provide some basic functionality
-or as some examples for those who wants to write his own (have a look into folder
-[src/app/plugins](https://github.com/ondiiik/vindriktning-mpy/tree/main/src/app/plugins)).
+`plugins`. Plugins are written in python and there are several plugins already present (built in) po provide
+some basic functionality or as some examples for those who wants to write his own (have a look into folder
+[src/app/plugins](src/app/plugins)).
+
+When plugins are loaded, they are disabled by default. After reboot, suitable files are created in `cfg/plugins`
+(see [Configuratio] section). Each plugin has it's own config file which always contains item `enabled` which needs to be set to `true` if
+plugin shall be activated. Plugin is then loaded with next reboot.
+
 
 #### `sensor_to_led`
 
@@ -169,6 +191,7 @@ This plugin handles LED colors according to sensors values. Especially CO2 (top 
 Colors are signalizing smoothly from green (good conditions), over blue (normal conditions) to red (bad conditions).
 
 ![RGB](doc/led1.png)
+
 
 #### `sensor_to_mqtt`
 
@@ -218,10 +241,12 @@ and can see them as regular sensors. Just note that this template is printed in 
 
 ![HA](doc/ha1.png)
 
+
 #### `co2_alert`
 
 This plugin activates alarm on built in buzzer when CO2 level exceedes certain value to notify
-that is time to open window and make air more fresh.
+that is time to open window to get fresh air in to the room.
+
 
 ### Advices
 
@@ -235,6 +260,7 @@ why some kind of power management was implemented in this software. However to a
 around sensor would help. Be sure to keep side of sensor pointing out of the box uncovered to keep access to the
 outer air. To use some rubber mount dumpers would be good idea as well as there may be vibrations from `PM1006K`
 ventilator.
+
 
 #### Measuring with `DHT21` or `SHT40`
 
