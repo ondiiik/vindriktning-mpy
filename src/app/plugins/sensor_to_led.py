@@ -24,21 +24,17 @@ class Sensor2Led(Plugin):
             app,
             __name__,
             {
-                "enabled": {
-                    "value": True,
-                    "description": "Set True here to enable this plug-in",
-                },
                 "levels_co2": {
                     "value": [700, 850, 1000, 1200],
-                    "description": "Levels for sensors values for GOOD, OK, BAD and WORST signalisation of CO2 in ppm",
+                    "description": "Levels for sensors values for GOOD, OK, BAD and WORST signalisation of CO2 in ppm.",
                 },
                 "levels_dust": {
                     "value": [20, 40, 67, 85],
-                    "description": "Levels for sensors values for GOOD, OK, BAD and WORST signalisation of dust in air in ug/m3",
+                    "description": "Levels for sensors values for GOOD, OK, BAD and WORST signalisation of dust in air in ug/m3.",
                 },
                 "night_mode": {
                     "value": False,
-                    "description": "When enabled, then LEDs are off during night, excluding case of BAD or WORST CO2 sensor conditions level",
+                    "description": "When enabled, then LEDs are off during night, excluding case of BAD or WORST CO2 sensor conditions level.",
                 },
             },
         )

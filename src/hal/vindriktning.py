@@ -23,22 +23,29 @@ class config:
                 "pin": 13,
                 "inverted": False,
                 "active": False,
+                "description": "Setup for connected buzzer. Here you can specify on which pin is buzzer connected, if control signal is inverted (buzzer active in 0) or not and if you have passive buzzer (requires PWM to produce requested frequency) or active (requires just logical signal)."
             },
             "led": {
                 "pin": 25,
+                "description": "Here you can specify on which pin your NeoPixel LED strip is connected. It shall always have at least 3 LEDs."
             },
             "fan": {
                 "pin": 12,
+                "inverted": False,
+                "description": "Defines pin where fan for dust detector is attached. You can also specify if control signal is inverted (fun runs on 0) or not."
             },
             "light": {
                 "pin": 4,
+                "description": "Defines pin where ambient light phototransistor sensor is connected."
             },
             "dht22": {
                 "pin": 5,
+                "description": "Defines pin DHT22 sensor is connected if there is some. Use null when sensor is not present."
             },
             "i2c": {
                 "sda": 21,
                 "scl": 22,
+                "description": "Defines pins where devices can be connected on I2C bus."
             },
         }
     )
@@ -97,10 +104,11 @@ _LIGHTS_REST = const(65535 - _LIGHTS_HIGH)
 
 class Buzzer:
     def __init__(self) -> None:
+        self.active = config.hardware["buzzer"]["active"]
         self._pin = Pin(config.hardware["buzzer"]["pin"], Pin.OUT)
         self._p0 = config.hardware["buzzer"]["inverted"]
         self._pin.value(self._p0)
-        if config.hardware["buzzer"]["active"]:
+        if self.active:
             self.on = self._on_pin
             self.off = self._off_pin
         else:
@@ -131,19 +139,24 @@ class Vindriktning:
 
     def __init__(self) -> None:
         self.led = self.Led()
-        self.fan = Pin(config.hardware["fan"]["pin"], Pin.OUT)
         self.buzzer = Buzzer()
         self._i2c = SoftI2C(
             scl=Pin(config.hardware["i2c"]["scl"]), sda=Pin(config.hardware["i2c"]["sda"]), freq=400000
         )  # SHT40 does not work with HW I2C
         self._sdc41 = SCD4X(self._i2c)
         self._sht40 = SHT4X(self._i2c)
-        self._dht = DHT22(Pin(config.hardware["dht22"]["pin"]))
+        pin = Pin(config.hardware["dht22"]["pin"])
+        if pin is None:
+            self._dht = None
+        else:
+            self._dht = DHT22(Pin(pin))
         self._uart = _uart
         self._dcmd = _cmd
         self._buff = bytearray(20)
         self._light_restore = 0
         self._sdc41.start_periodic_measurement()
+        self._fan = Pin(config.hardware["fan"]["pin"], Pin.OUT)
+        self._fan_p0 = config.hardware["fan"]["inverted"]
 
         try:
             self._light = ADC(Pin(config.hardware["light"]["pin"]), atten=ADC.ATTN_11DB)
@@ -154,10 +167,13 @@ class Vindriktning:
         self.sensors = ("SDC41",)
 
         try:
-            self._dht.measure()
-            self._dht.temperature()
-            self._dht.humidity()
-            self.sensors = "SDC41", "DHT22"
+            if self._dht is not None:
+                self._dht.measure()
+                self._dht.temperature()
+                self._dht.humidity()
+                self.sensors = "SDC41", "DHT22"
+            else:
+                log.dbg("DHT22 disabled in config - skipping")
         except Exception:
             log.dbg("DHT22 not found - skipping")
             self._dht = None
@@ -236,6 +252,8 @@ class Vindriktning:
     def light_reinit(self) -> None:
         self._light = ADC(Pin(config.hardware["light"]["pin"]), atten=ADC.ATTN_11DB)
 
+    def fan_value(self, value: bool) -> None:
+        self._fan.value(value ^ self._fan_p0)
 
 __all__ = (
     "Buzzer",

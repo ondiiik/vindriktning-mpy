@@ -25,35 +25,35 @@ class Sensor2Mqtt(Plugin):
             {
                 "server": {
                     "value": "Please fill in",
-                    "description": "IP address of MQTT broker",
+                    "description": "IP address of MQTT broker.",
                 },
                 "port": {
                     "value": 8883,
-                    "description": "Port where MQTT broker is listening",
+                    "description": "Port where MQTT broker is listening.",
                 },
                 "user": {
                     "value": "Please fill in",
-                    "description": "User-name to login to MQTT broker",
+                    "description": "User-name to login to MQTT broker.",
                 },
                 "password": {
                     "value": "Please fill in",
-                    "description": "Password to login to MQTT broker",
+                    "description": "Password to login to MQTT broker.",
                 },
                 "ssl": {
                     "value": True,
-                    "description": "Say if SSL/TLS encryption will be used to communicate with MQTT broker",
+                    "description": "Say if SSL/TLS encryption will be used to communicate with MQTT broker.",
                 },
                 "topic": {
                     "value": f"vindriktning/sensor_{hexlify(unique_id()).decode()}",
-                    "description": "Period how often the data shall be refreshed on MQTT",
+                    "description": "Topic to be used to present sensor on MQTT.",
                 },
                 "period": {
                     "value": 180,
-                    "description": "Topic to be used to present sensor on MQTT",
+                    "description": "Period how often the data shall be refreshed on MQTT.",
                 },
                 "retry_time": {
                     "value": 60,
-                    "description": "Time after which system retry to connect to MQTT in the case of failure",
+                    "description": "Time after which system retry to connect to MQTT in the case of failure.",
                 },
             },
         )

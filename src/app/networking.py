@@ -17,11 +17,11 @@ config = Cfg(
     {
         "ssid": {
             "value": "Please fill in",
-            "description": "SSID (name) of WiFi network where to be connected",
+            "description": "SSID (name) of WiFi network where to be connected.",
         },
         "passwd": {
             "value": "Please fill in",
-            "description": "WiFi Password",
+            "description": "WiFi connection password.",
         },
     },
 )
@@ -64,7 +64,7 @@ class WiFi:
             with self.app.pm.disabled:
                 log.dbg("Connecting ...")
                 cls.sta_if.active(True)
-                cls._connect()
+                await cls._connect()
                 collect()
 
                 while not cls.sta_if.isconnected():
@@ -92,7 +92,13 @@ class WiFi:
             log.msg("Disconnected")
 
     @classmethod
-    def _connect(cls) -> None:
+    async def _connect(cls) -> None:
+        for _ in range(8):
+            try:
+                cls.sta_if.connect(config.ssid, config.passwd)
+                return
+            except OSError:
+                await sleep_ms(1000)
         cls.sta_if.connect(config.ssid, config.passwd)
 
 

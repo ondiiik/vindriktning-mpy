@@ -44,17 +44,17 @@ class Measure:
             self.humidity_pc = vindriktning.humidity_pc
             self._new_data.set()
 
-            await sleep(config.period["main"])
+            await sleep(config.measure.period["main"])
 
     async def dust_task(self):
         vindriktning = self.app.vindriktning
-        vindriktning.fan.on()
+        vindriktning.fan_value(True)
         await sleep(2)
 
         while True:
-            if config.dust_in_night or vindriktning.light:
+            if config.measure.dust_in_night or vindriktning.light:
                 with self.app.pm.disabled:
-                    vindriktning.fan.on()
+                    vindriktning.fan_value(True)
                     await self._blink(7)
 
                     acc = 0
@@ -69,13 +69,13 @@ class Measure:
                         acc += dust_ugpm3
                         await self._blink(6)
 
-                    vindriktning.fan.off()
+                    vindriktning.fan_value(False)
                 self.dust_ugpm3 = acc / avg_cnt
                 self._new_data.set()
 
-                await sleep(config.period["dust"])
+                await sleep(config.measure.period["dust"])
             else:
-                vindriktning.fan.off()
+                vindriktning.fan_value(False)
                 await sleep(120)
 
     async def _blink(self, cnt):

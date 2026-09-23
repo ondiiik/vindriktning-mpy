@@ -17,15 +17,15 @@ class Co2Alert(Plugin):
             {
                 "levels_high": {
                     "value": 1200,
-                    "description": "Levels of CO2 in ppm when alert beeps",
+                    "description": "Levels of CO2 in ppm when alert beeps (time to refresh air).",
                 },
                 "levels_low": {
                     "value": 600,
-                    "description": "Levels of CO2 in ppm when alert consider save CO2 level",
+                    "description": "Levels of CO2 in ppm when alert consider save CO2 level (refreshed air).",
                 },
                 "night_silent": {
-                    "value": True,
-                    "description": "Set this on True when you want to switch alert off in night",
+                    "value": False,
+                    "description": "Set this on True when you want to switch alert off in night.",
                 },
             },
         )

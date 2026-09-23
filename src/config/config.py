@@ -16,9 +16,12 @@ class Cfg(dict):
             with open(path, "w") as f:
                 f.write("{\n")
                 for i, (k, v) in enumerate(dfl_cfg.items()):
-                    f.write(f'  "{k}": ')
-                    dump(v, f)
-                    f.write("\n" if i == (len(dfl_cfg) - 1) else ",\n")
+                    f.write(f'  "{k}": {{\n')
+                    for ii, (kk, vv) in enumerate(v.items()):
+                        f.write(f'    "{kk}": ')
+                        dump(vv, f)
+                        f.write("\n" if ii == (len(v) - 1) else ",\n")
+                    f.write("  }\n" if i == (len(dfl_cfg) - 1) else "  },\n")
                 f.write("}\n")
             super().__init__(dfl_cfg.items())
 

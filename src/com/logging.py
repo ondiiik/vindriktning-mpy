@@ -9,11 +9,11 @@ config = Cfg(
     {
         "verbose": {
             "value": False,
-            "description": "Set this to true to have more verbose log",
+            "description": "Set this to true to have more verbose log.",
         },
         "exceptions": {
             "value": False,
-            "description": "Set this to true to stor each exception into file exceptions.log",
+            "description": "Set this to true to store each exception into file error.log",
         },
     },
 )

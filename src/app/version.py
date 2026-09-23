@@ -13,7 +13,7 @@ class Version(tuple):
         return repr(self)
 
 
-version = Version(2, 5)
+version = Version(2, 6)
 
 
 __all__ = (

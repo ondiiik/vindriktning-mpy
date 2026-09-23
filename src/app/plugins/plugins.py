@@ -15,7 +15,7 @@ class Plugin:
             "enabled",
             {
                 "value": False,
-                "description": "Set True here to enable this plug-in",
+                "description": "Set true here to enable this plug-in.",
             },
         )
         self.cfg = Cfg(f"plugins/{name.split('.')[-1]}", dfl_cfg)

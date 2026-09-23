@@ -15,11 +15,11 @@ config = Cfg(
     {
         "pm_enabled": {
             "value": True,
-            "description": "Set this true to enable power management and prevent from ESP32 heating",
+            "description": "Set this true to enable power management and prevent from ESP32 heating.",
         },
         "wdt_time": {
             "value": 10,
-            "description": "Watchdog time in seconds",
+            "description": "Watchdog time in seconds. After this time the device will be restarted when hanged.",
         },
     },
 )
